@@ -1,0 +1,67 @@
+import requests
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import streamlit as st
+from datetime import datetime
+
+
+st.set_page_config(page_title="Weather Forecast Dashboard", layout="centered")
+st.title("🌦️ 5-Day Weather Forecast Dashboard")
+st.markdown("This app fetches and visualizes weather forecast data using OpenWeatherMap API.")
+
+
+city = st.text_input("Enter city name:", "New York")
+api_key = st.text_input("05f9a9f001b9fe05152320f70f3ce716:", type="password")
+
+
+if city and api_key:
+    try:
+        
+        url = f"http://api.openweathermap.org/data/2.5/forecast?q={city}&appid={api_key}&units=metric"
+        response = requests.get(url)
+        response.raise_for_status()  
+        data = response.json()
+
+        
+        forecast = data["list"]
+        times = [datetime.strptime(entry["dt_txt"], "%Y-%m-%d %H:%M:%S") for entry in forecast]
+        temps = [entry["main"]["temp"] for entry in forecast]
+        humidity = [entry["main"]["humidity"] for entry in forecast]
+        weather_desc = [entry["weather"][0]["description"] for entry in forecast]
+
+        
+        df = pd.DataFrame({
+            "Datetime": times,
+            "Temperature (°C)": temps,
+            "Humidity (%)": humidity,
+            "Weather Description": weather_desc
+        })
+
+        
+        sns.set(style="whitegrid")
+
+        
+        st.subheader("📈 Temperature Over Time")
+        fig1, ax1 = plt.subplots(figsize=(10, 4))
+        sns.lineplot(data=df, x="Datetime", y="Temperature (°C)", ax=ax1, marker="o")
+        ax1.set_xticklabels(df["Datetime"].dt.strftime("%m-%d %H:%M"), rotation=45)
+        st.pyplot(fig1)
+
+        
+        st.subheader("💧 Humidity Over Time")
+        fig2, ax2 = plt.subplots(figsize=(10, 4))
+        sns.lineplot(data=df, x="Datetime", y="Humidity (%)", ax=ax2, marker="o", color="green")
+        ax2.set_xticklabels(df["Datetime"].dt.strftime("%m-%d %H:%M"), rotation=45)
+        st.pyplot(fig2)
+
+        
+        st.subheader("📋 Forecast Data Table")
+        st.dataframe(df.set_index("Datetime"))
+
+    except requests.exceptions.RequestException as e:
+        st.error(f"Error fetching data: {e}")
+    except KeyError:
+        st.error("Invalid city name or API key. Please check and try again.")
+else:
+    st.info("Please enter a city and API key to fetch data.")
