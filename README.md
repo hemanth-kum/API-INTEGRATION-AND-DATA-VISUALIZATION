@@ -140,3 +140,7 @@ Fetch and process real-time JSON data
 Visualize key parameters like temperature and humidity
 
 This task helped reinforce my understanding of data pipelines and how Python can be used in real-world projects involving live data and visualization.
+
+#OUTPUT
+
+<img width="896" alt="Image" src="https://github.com/user-attachments/assets/c0d31814-7048-43ea-84d9-7579150b3bc6" />
